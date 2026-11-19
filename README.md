@@ -1,5 +1,15 @@
 # Listening Lab
 
+Live site: https://willow-baek.github.io/listening-lab/
+
+## GitHub Pages
+
+Pushes to `main` run the tests and publish via GitHub Actions. `npm run build:pages` builds for the `/listening-lab/` URL path.
+
+GitHub Pages is static hosting. The verified ABC neighbours and Small talk videos include saved timed captions. For other videos, paste a transcript with timestamps or import an SRT/VTT file. Live caption fetching is available only with the development server or a separately hosted backend.
+
+Session records stay in each browser and are separate from localhost and the earlier Sites URL. The total elapsed timer includes pauses; only the stage timer pauses.
+
 React + TypeScript로 만든 브라우저 로컬 리스닝 훈련 앱입니다. 기존 프로젝트가 없어 이 폴더에 독립적인 MVP로 구현했습니다.
 
 ## 실행
