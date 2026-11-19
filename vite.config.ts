@@ -140,4 +140,8 @@ function localTransfer(): Plugin {
     },
   };
 }
-export default defineConfig({ plugins: [localTransfer()] });
+export default defineConfig({
+  base: process.env.GITHUB_PAGES === "1" ? "/listening-lab/" : "/",
+  define: { __STATIC_HOST__: JSON.stringify(process.env.GITHUB_PAGES === "1") },
+  plugins: [localTransfer()],
+});

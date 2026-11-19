@@ -41,6 +41,7 @@ import {
 import { YouTube, type Player } from "./youtube";
 import { Help } from "./Help";
 import { firstSpeechRange, transcriptCues as parseCaptionText, rangeForText } from "./transcript-cues";
+import { loadTranscript } from "./transcript-loader";
 import { KNOWN_CAPTIONS } from "./known-captions";
 import { SegmentPractice } from "./SegmentPractice";
 function loadActive(): Session | null {
@@ -118,6 +119,7 @@ export default function App() {
       if (range && !rangeEdited.current) { setStart(String(range.start)); setEnd(String(range.end)); }
     };
     if (KNOWN_CAPTIONS[id]) { apply(firstSpeechRange(KNOWN_CAPTIONS[id])); setTimingBusy(false); return; }
+    if (__STATIC_HOST__) { setTimingBusy(false); return; }
     const controller = new AbortController();
     setTimingBusy(true);
     fetch(`/__listening-lab/timing?videoId=${encodeURIComponent(id)}`, { signal: controller.signal })
@@ -446,14 +448,7 @@ export default function App() {
     setImportError("");
     const sessionId = session.id;
     try {
-      const params = new URLSearchParams({ videoId: session.videoId });
-      if (officialUrl.trim()) params.set("source", officialUrl.trim());
-      const response = await fetch(`/__listening-lab/transcript?${params}`);
-      const data = await response.json();
-      if (!response.ok || !data.text)
-        throw new Error(
-          data.error || "스크립트를 가져오지 못했어요. 직접 붙여넣어 주세요.",
-        );
+      const data = await loadTranscript(session.videoId, officialUrl.trim() || undefined);
       setSession((s) =>
         s?.id === sessionId && s.step === 1 && !s.transcript.trim()
           ? { ...s, transcript: data.text, transcriptSource: data.source, transcriptCues: data.cues ?? [] }
@@ -1241,7 +1236,7 @@ export default function App() {
                   </div>
                   {session.step === 1 && (!session.transcript.trim() || transcriptEditing) && (
                     <div className="transcript-editor">
-                      {!session.transcript.trim() && <div className="transcript-import">
+                      {!session.transcript.trim() && (!__STATIC_HOST__ || KNOWN_CAPTIONS[session.videoId]) && <div className="transcript-import">
                         <button
                           className="quiet"
                           disabled={
@@ -1254,10 +1249,10 @@ export default function App() {
                             : "스크립트 가져오기"}
                         </button>
                         <Help label="스크립트 가져오기">
-                          유튜브 영어 시간 자막을 먼저 시도합니다. 가져오지 못하면 연결된 ABC 원문을 불러옵니다. ABC 원문에는 시간 정보가 없습니다. 자동 수집이 안 되면 유튜브 스크립트를 시간 표시째 붙여넣거나 SRT·VTT 파일을 넣으세요.
+                          {__STATIC_HOST__ ? "이웃 대화와 Small talk는 시간 자막을 바로 가져올 수 있어요. 다른 영상은 유튜브 스크립트를 시간 표시째 붙여넣거나 SRT·VTT 파일을 넣으세요." : "유튜브 영어 시간 자막을 먼저 시도합니다. 가져오지 못하면 연결된 ABC 원문을 불러옵니다. ABC 원문에는 시간 정보가 없습니다. 자동 수집이 안 되면 유튜브 스크립트를 시간 표시째 붙여넣거나 SRT·VTT 파일을 넣으세요."}
                         </Help>
                       </div>}
-                      {!session.transcript.trim() && (
+                      {!__STATIC_HOST__ && !session.transcript.trim() && (
                         <details className="official-source">
                           <summary>다른 ABC 공식 자료 링크 입력</summary>
                           <input
