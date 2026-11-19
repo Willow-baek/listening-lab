@@ -1,0 +1,20 @@
+<!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>STEP 6 구간 반복 확인</title></head><body><div id="root"></div><script type="module">
+if (import.meta.env.DEV) {
+ const React = await import('react');
+ const {createRoot} = await import('react-dom/client');
+ const {SegmentPractice} = await import('/src/SegmentPractice.tsx');
+ await import('/src/styles.css');
+ function Preview() {
+  const [marks,setMarks]=React.useState([{id:'existing',text:'I barely slept last night.',note:'',done:false}]);
+  const [timed,setTimed]=React.useState(false);
+  const [playing,setPlaying]=React.useState('');
+  return React.createElement('main',null,
+   React.createElement('h1',null,'Difficult Parts'),
+   React.createElement('button',{className:'quiet',onClick:()=>setTimed(!timed)},'시간 자막 전환'),
+   React.createElement('p',{role:'status'},playing),
+   React.createElement(SegmentPractice,{transcript:timed?'0:08 Morning neighbour.\n0:16 I barely slept last night.\n0:26 There was so much noise.':'Morning neighbour. I barely slept last night. There was so much noise.',start:8,end:48,marks,onChange:setMarks,onPlay:r=>setPlaying(`반복 ${r.start}–${r.end}초`),onStop:()=>setPlaying(''),looping:!!playing})
+  );
+ }
+ createRoot(document.getElementById('root')).render(React.createElement(Preview));
+}
+</script></body></html>

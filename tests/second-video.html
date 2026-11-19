@@ -1,0 +1,18 @@
+<!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Listening Lab · Second video QA</title></head><body><div id="root"></div><script type="module">
+if (import.meta.env.DEV) {
+ const {STORAGE,createSessions}=await import('/src/domain.ts');
+ const {KNOWN_CAPTIONS}=await import('/src/known-captions.ts');
+ const mode=new URLSearchParams(location.search).get('mode');
+ if (mode==='setup') {localStorage.removeItem(STORAGE.active);localStorage.removeItem(STORAGE.pending);}
+ else {
+  const session=createSessions('https://www.youtube.com/watch?v=KysPzRkN9uw',10,50,false)[0];
+  session.transcriptCues=KNOWN_CAPTIONS.KysPzRkN9uw;
+  session.transcript=session.transcriptCues.map(c=>c.text).join('\n');
+  session.step=mode==='repeat'?2:5;
+  session.remaining=session.plan[session.step];session.counts=mode==='repeat'?[9,0,0]:[10,10,10];
+  session.gapSeconds=2;
+  localStorage.setItem(STORAGE.active,JSON.stringify(session));
+ }
+ await import('/src/main.tsx');
+}
+</script></body></html>

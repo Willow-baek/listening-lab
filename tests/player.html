@@ -1,0 +1,6 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="referrer" content="strict-origin-when-cross-origin"><title>Listening Lab 재생 검사</title></head><body><div id="root"></div><script type="module">
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import {YouTube} from '/src/youtube.tsx';
+function Test(){const [status,setStatus]=React.useState('로딩'), [id,setId]=React.useState('bjcGHsmf540');const player=React.useRef(null);return React.createElement('main',null,React.createElement('h1',null,'공식 YouTube 재생 검사'),React.createElement('select',{value:id,onChange:e=>setId(e.target.value),'aria-label':'검사 영상'},...['bjcGHsmf540','KysPzRkN9uw','VLxUOJ92mdE','M7lc1UVf-VE'].map(v=>React.createElement('option',{key:v,value:v},v))),React.createElement('div',{style:{width:'640px',height:'360px'}},React.createElement(YouTube,{id,start:8,onReady:p=>{player.current=p;setStatus('준비 완료')},onState:n=>setStatus('재생 상태 '+n),onError:setStatus})),React.createElement('button',{onClick:()=>player.current?.playVideo()},'재생 검사'),React.createElement('p',{role:'status'},status));}createRoot(document.getElementById('root')).render(React.createElement(Test));
+</script></body></html>

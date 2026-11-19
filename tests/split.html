@@ -1,0 +1,11 @@
+<!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Listening Lab · Split QA</title></head><body><div id="root"></div><script type="module">
+// Development-only completion fixture, not included in the production build.
+if (import.meta.env.DEV) {
+ const {createSessions, STORAGE}=await import('/src/domain.ts');
+ const [first,second]=createSessions('https://www.youtube.com/watch?v=M7lc1UVf-VE',120,240,true);
+ Object.assign(first,{step:6,remaining:30,elapsed:4170,counts:[10,10,10],before:'first listening notes',transcript:'The first segment transcript.'});
+ localStorage.setItem(STORAGE.active,JSON.stringify(first));
+ localStorage.setItem(STORAGE.pending,JSON.stringify([second]));
+ await import('/src/main.tsx');
+}
+</script></body></html>

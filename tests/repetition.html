@@ -1,0 +1,3 @@
+<!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Listening Lab 반복 검사</title></head><body><div id="root"></div><script type="module">
+if(import.meta.env.DEV){const {createSessions,STORAGE}=await import('/src/domain.ts');const s=createSessions('https://www.youtube.com/watch?v=bjcGHsmf540',8,10,false)[0];Object.assign(s,{step:2,counts:[8,0,0],remaining:4,gapSeconds:3});localStorage.setItem(STORAGE.active,JSON.stringify(s));await import('/src/main.tsx');}
+</script></body></html>

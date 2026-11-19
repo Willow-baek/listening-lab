@@ -1,0 +1,9 @@
+<!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Listening Lab · QA fixture</title></head><body><div id="root"></div><script type="module">
+// Development-only, isolated-origin browser fixture. Not included in production output.
+if (import.meta.env.DEV) {
+ const {allocate, STORAGE}=await import('/src/domain.ts');
+ const session={id:'browser-qa-session',url:'https://www.youtube.com/watch?v=M7lc1UVf-VE',videoId:'M7lc1UVf-VE',start:0,end:40,transcript:'It’s been a steep learning curve though. I only recently switched departments.',plan:allocate(40),phase:'training',step:6,remaining:30,elapsed:3570,counts:[10,10,10],before:'It’s been a planning camp (추측).\nI change apartment (추측).',after:'',answers:{},marks:[]};
+ localStorage.setItem(STORAGE.active,JSON.stringify(session));
+ await import('/src/main.tsx');
+}
+</script></body></html>
