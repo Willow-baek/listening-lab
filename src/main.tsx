@@ -5,6 +5,12 @@ import { ensureLocalhost } from "./local-origin";
 import "./styles.css";
 async function start() {
   const root = document.getElementById("root")!;
+  if (new URLSearchParams(location.search).has('guide')) {
+    const {default: Guide} = await import('./Guide');
+    document.title = 'Listening Lab · 사용 안내';
+    createRoot(root).render(<React.StrictMode><Guide/></React.StrictMode>);
+    return;
+  }
   root.textContent = "재생 환경을 준비하고 있습니다…";
   try {
     if (await ensureLocalhost()) return;
