@@ -14,6 +14,10 @@ Public English captions must be available. YouTube may restrict automated reques
 
 Session records stay in each browser and are separate from localhost and the earlier Sites URL. The total elapsed timer includes pauses; only the stage timer pauses.
 
+## Caption cost guard
+
+The client and caption server stop remote caption requests at 2026-12-30 00:00 Australia/Melbourne (2026-12-29T13:00:00Z), before the currently announced 2027 hosting overage period. Existing local captions and manual input remain available. The linked cloud schedule “Listening Lab 과금 확인·자동 중지” checks policy/available usage daily at 09:00 Melbourne and makes the Caption Service owner-only on billing risk or on December 30, then notifies the owner. This is periodic monitoring, not a real-time account billing cap. Resuming remote captions requires owner review; do not automatically purchase credits or enable a paid plan.
+
 ## Google Sheets sync
 
 Open the history screen to configure a personal Google Sheets connection. The destination workbook has two tabs, `학습 기록` and `단계별`. The app saves dates, links, exact clip boundaries, measured stage and total elapsed times, actual repeats, self-assessment and the next-level guide. Previous stage durations that were never measured stay blank.

@@ -1,6 +1,13 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {validateTranscript,remoteTranscript,TRANSCRIPT_ENDPOINT} from './transcript-bridge';
+import {captionRequestsAllowed,CAPTION_PAUSE_AT} from './caption-policy';
+test('automatic caption requests stop before the announced hosting charge period',()=>{
+  assert.equal(captionRequestsAllowed(CAPTION_PAUSE_AT-1),true);
+  assert.equal(captionRequestsAllowed(CAPTION_PAUSE_AT),false);
+  assert.equal(captionRequestsAllowed(CAPTION_PAUSE_AT+1),false);
+  assert.equal(captionRequestsAllowed(NaN),false);
+});
 test('public caption response validates real timing without synthesizing or accepting bad cues',()=>{
   const data=validateTranscript({cues:[{start:8.63,end:12.4,text:'Second.'},{start:4.91,end:8.63,text:'First.'}],source:'https://www.youtube.com/watch?v=ldwdpfIKp3o'});
   assert.equal(data.text,'First.\nSecond.');
@@ -10,6 +17,8 @@ test('public caption response validates real timing without synthesizing or acce
 });
 test('new video lookup sends only the video ID without credentials and handles missing or mismatched captions',async()=>{
   const original=globalThis.fetch;
+  const originalNow=Date.now;
+  Date.now=()=>CAPTION_PAUSE_AT-1000;
   const data={cues:[{start:4.91,end:8.63,text:'First.'}],source:'https://www.youtube.com/watch?v=ldwdpfIKp3o'};
   let calls=0;
   globalThis.fetch=async(input,options)=>{
@@ -26,5 +35,8 @@ test('new video lookup sends only the video ID without credentials and handles m
     assert.equal((await remoteTranscript('ldwdpfIKp3o')).cues?.[0].start,4.91);
     await assert.rejects(()=>remoteTranscript('ldwdpfIKp3o'),/No public English captions/);
     await assert.rejects(()=>remoteTranscript('ldwdpfIKp3o'),/다른 자막/);
-  }finally{globalThis.fetch=original;}
+    Date.now=()=>CAPTION_PAUSE_AT;
+    await assert.rejects(()=>remoteTranscript('ldwdpfIKp3o'),/비용 발생 방지/);
+    assert.equal(calls,3);
+  }finally{globalThis.fetch=original;Date.now=originalNow;}
 });

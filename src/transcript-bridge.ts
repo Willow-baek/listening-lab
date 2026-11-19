@@ -1,4 +1,5 @@
 import type { LoadedTranscript } from './transcript-loader';
+import { captionRequestsAllowed } from './caption-policy';
 // Public, read-only captions. No Sheet identifiers, credentials or learning records are sent.
 export const TRANSCRIPT_ENDPOINT = 'https://listening-lab-captions.hanssollllll.chatgpt.site/captions';
 export function validateTranscript(data: unknown): LoadedTranscript {
@@ -11,6 +12,7 @@ export function validateTranscript(data: unknown): LoadedTranscript {
   return {text:cues.map(cue=>cue.text).join('\n'),cues,source:typeof value.source === 'string' && /^https:\/\/www\.youtube\.com\/watch\?v=[\w-]{11}$/.test(value.source) ? value.source : '',kind:'youtube'};
 }
 export async function remoteTranscript(videoId: string): Promise<LoadedTranscript> {
+  if (!captionRequestsAllowed()) throw new Error('비용 발생 방지를 위해 자동 자막 조회를 일시 중지했어요. 시간 자막을 직접 넣어 주세요.');
   const url = new URL(TRANSCRIPT_ENDPOINT);
   url.searchParams.set('videoId',videoId);
   const response = await fetch(url,{signal:AbortSignal.timeout(30000),credentials:'omit',redirect:'error',referrerPolicy:'no-referrer'});
