@@ -291,4 +291,132 @@ export const KNOWN_CAPTIONS: Record<string, TranscriptCue[]> = {
     "end": 120
   }
 ]
+,
+  E9sJp2bISxk: [
+  {
+    "start": 7,
+    "text": "Uh excuse me. Oh, hi there. How can I help you?",
+    "end": 10
+  },
+  {
+    "start": 10,
+    "text": "I bought this jacket yesterday and I would like a refund. Oh ok.",
+    "end": 13
+  },
+  {
+    "start": 13,
+    "text": "What was wrong with it? Well, when I bought it, it had a massive rip in it. Oh,",
+    "end": 18
+  },
+  {
+    "start": 18,
+    "text": "I'm sorry about that. Uh, do you have your receipt? Well, that's the thing.",
+    "end": 22
+  },
+  {
+    "start": 22,
+    "text": "When I bought it, I wasn't given a receipt. Oh, that's strange.",
+    "end": 25
+  },
+  {
+    "start": 25,
+    "text": "We should be giving you a receipt when you make a purchase here. Uh,",
+    "end": 28
+  },
+  {
+    "start": 28,
+    "text": "in any case, our refund policy actually states that you need a receipt.",
+    "end": 33
+  },
+  {
+    "start": 33,
+    "text": "I don't know what to tell you. I mean,",
+    "end": 34
+  },
+  {
+    "start": 34,
+    "text": "I've got a jacket with a rip in it and I wasn't given a receipt, so... Um,",
+    "end": 40
+  },
+  {
+    "start": 40,
+    "text": "alright,",
+    "end": 40
+  },
+  {
+    "start": 40,
+    "text": "well let me just speak to my manager and I'll see what I can do for you. Sure.",
+    "end": 44
+  },
+  {
+    "start": 44,
+    "text": "Oh, but before I do that,",
+    "end": 46
+  },
+  {
+    "start": 46,
+    "text": "are you able to show me your bank transaction details which prove you bought the",
+    "end": 49
+  },
+  {
+    "start": 49,
+    "text": "jacket at our store? Yeah, just give me a second.",
+    "end": 55
+  },
+  {
+    "start": 55,
+    "text": "There you go. OK. Thank you.",
+    "end": 60
+  },
+  {
+    "start": 60,
+    "text": "I'll be one moment.",
+    "end": 68
+  },
+  {
+    "start": 68,
+    "text": "How'd you go? OK. So I've spoken to my manager and I've got good news.",
+    "end": 72
+  },
+  {
+    "start": 72,
+    "text": "First of all, we're so sorry about the rip.",
+    "end": 74
+  },
+  {
+    "start": 74,
+    "text": "That shouldn't have happened to you at all. Yeah, that was kind of annoying. But",
+    "end": 78
+  },
+  {
+    "start": 78,
+    "text": "we can definitely refund you since you could show us your bank transaction",
+    "end": 82
+  },
+  {
+    "start": 82,
+    "text": "details. Perfect. Alright, so how would you like me to process this one?",
+    "end": 85
+  },
+  {
+    "start": 85,
+    "text": "We can do cash, store credit or we can just swap it for a new one.",
+    "end": 88
+  },
+  {
+    "start": 88,
+    "text": "I think I just want my money back. So a refund please. OK.",
+    "end": 92
+  },
+  {
+    "start": 92,
+    "text": "I'll get you to fill out this refund form and we'll go from there. Sure.",
+    "end": 98
+  },
+  {
+    "start": 98,
+    "text": "Thanks very much.",
+    "end": 120
+  }
+]
 };

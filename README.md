@@ -6,7 +6,7 @@ Live site: https://willow-baek.github.io/listening-lab/
 
 Pushes to `main` run the tests and publish via GitHub Actions. `npm run build:pages` builds for the `/listening-lab/` URL path.
 
-GitHub Pages is static hosting. The verified ABC neighbours and Small talk videos include saved timed captions. For other videos, paste a transcript with timestamps or import an SRT/VTT file. Live caption fetching is available only with the development server or a separately hosted backend.
+GitHub Pages is static hosting. The verified ABC neighbours, Small talk and Getting a refund videos include saved timed captions. Supported captions are prepared automatically at session start and remain hidden until STEP 2. Existing user text is preserved. For other videos, paste a transcript with timestamps or import an SRT/VTT file. Live caption fetching is available only with the development server or a separately hosted backend.
 
 Session records stay in each browser and are separate from localhost and the earlier Sites URL. The total elapsed timer includes pauses; only the stage timer pauses.
 
@@ -93,7 +93,7 @@ http://127.0.0.1:5176/ 에서 사용합니다. `npm run build`는 TypeScript 검
 - 상단의 재생/일시정지 버튼은 페이지 맨 아래의 공식 YouTube 플레이어를 제어합니다. 영상은 CSS로 숨기거나 가리지 않습니다. 반복 화면은 횟수와 남은 시간을 크게 표시합니다.
 - STEP 3~5는 각 10회에서 정지하고 사용자가 ‘다음 단계로’를 눌러 이동합니다. STEP 6도 시간이 끝나면 정지하며 수동으로 넘어갑니다.
 - 반복 사이 휴식은 기본 3초이고 없음/2초/3초/5초로 변경할 수 있습니다. 휴식 중에는 영상·훈련 시간이 멈추고, 일시정지 시 휴식 카운트다운도 멈춥니다. 휴식은 예상 훈련 시간에 별도로 추가됩니다. 마지막 10회 후에는 자동 재생하지 않습니다.
-- STEP 2의 스크립트 가져오기는 저장된 검증 자막 → 공개 YouTube 영어 시간 자막 조회 → ABC 공식 원문 순서로 시도합니다. 이웃 대화와 Small talk는 실제 유튜브 시간 자막이 포함되어 있습니다. Getting a refund와 다른 ABC 페이지는 시간 자막 조회 실패 시 원문으로 대체됩니다. ABC URL은 HTTPS Learn English 경로만 허용합니다.
+- 지원 자료인 이웃 대화·Small talk·Getting a refund는 실제 유튜브 시간 자막을 포함하며 세션 시작 시 준비합니다. STEP 1에서는 숨기고 STEP 2부터 보여줍니다. 별도 서버가 있는 환경에서는 다른 영상의 시간 자막 조회와 ABC 원문 대체를 시도합니다. GitHub Pages에서는 다른 자료의 자막을 직접 넣어야 합니다.
 - 시간 자막은 텍스트와 별도로 로컬 저장되며 STEP 6에서 문장 재생과 드래그 구간 시간 연결에 쓰입니다. 자동 조회는 비공식 공개 자막 경로라 성공을 보장하지 않습니다. 실패해도 시간 표시가 있는 유튜브 스크립트 붙여넣기 또는 SRT·VTT 파일 입력으로 진행할 수 있습니다. ABC 원문에는 시간이 없으며 추정하지 않습니다. 입력한 스크립트는 자동 가져오기로 덮어쓰지 않습니다. Vite dev/preview 서버가 필요합니다.
 - 첫 번째 자기평가는 25% 미만/25~49%/50~74%/75~89%/90~100%의 5개 선택지입니다. 비율은 자기평가 기준이며 자동 점수가 아닙니다. 기존 기록의 4점 척도 의미는 유지합니다.
 - Before & After 칸과 기록 내려받기 버튼은 제거했습니다. STEP 1 최초 듣기 메모와 로컬 학습 기록은 유지합니다.

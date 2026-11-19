@@ -1,5 +1,19 @@
 import { KNOWN_CAPTIONS } from './known-captions';
 import type { TranscriptCue } from './transcript-cues';
+import type { Session } from './domain';
+export function hydrateKnownTranscript(session: Session, editing = false): Session {
+  if (session.phase === 'result') return session;
+  const cues = session.transcriptCues?.length ? session.transcriptCues : KNOWN_CAPTIONS[session.videoId];
+  if (!cues?.length) return session;
+  const fillText = !editing && !session.transcript.trim();
+  if (session.transcriptCues?.length && !fillText) return session;
+  return {
+    ...session,
+    transcriptCues: cues,
+    transcript: fillText ? cues.map(c => c.text).join('\n') : session.transcript,
+    transcriptSource: fillText ? `https://www.youtube.com/watch?v=${session.videoId}` : session.transcriptSource,
+  };
+}
 export type LoadedTranscript = { text: string; cues?: TranscriptCue[]; source: string; kind?: string };
 export async function loadTranscript(videoId: string, source?: string): Promise<LoadedTranscript> {
   if (__STATIC_HOST__) {

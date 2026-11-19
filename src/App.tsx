@@ -41,7 +41,7 @@ import {
 import { YouTube, type Player } from "./youtube";
 import { Help } from "./Help";
 import { firstSpeechRange, transcriptCues as parseCaptionText, rangeForText } from "./transcript-cues";
-import { loadTranscript } from "./transcript-loader";
+import { hydrateKnownTranscript, loadTranscript } from "./transcript-loader";
 import { KNOWN_CAPTIONS } from "./known-captions";
 import { SegmentPractice } from "./SegmentPractice";
 function loadActive(): Session | null {
@@ -168,7 +168,8 @@ export default function App() {
   };
   useEffect(() => {
     if (!session || session.phase === "result") return;
-    const cues = session.transcriptCues?.length ? session.transcriptCues : KNOWN_CAPTIONS[session.videoId];
+    const prepared = hydrateKnownTranscript(session, transcriptEditing);
+    const cues = prepared.transcriptCues;
     if (!cues) return;
     const marks = session.marks.map(mark => {
       if (mark.rangeOrigin === "manual") return mark;
@@ -177,10 +178,10 @@ export default function App() {
       return range && range.start >= session.start && range.end <= session.end
         ? { ...mark, range, rangeOrigin: "caption" as const } : mark;
     });
-    if (!session.transcriptCues?.length || marks.some((mark, i) => mark !== session.marks[i])) {
-      setSession(s => s?.id === session.id ? { ...s, transcriptCues: cues, marks } : s);
+    if (prepared !== session || marks.some((mark, i) => mark !== session.marks[i])) {
+      setSession(s => s?.id === session.id ? { ...prepared, marks } : s);
     }
-  }, [session?.id, session?.transcriptCues]);
+  }, [session?.id, session?.transcriptCues, transcriptEditing]);
   useEffect(() => {
     if (session) write(STORAGE.active, session);
   }, [session]);
@@ -372,7 +373,7 @@ export default function App() {
         b,
         mode === "split" && b - a > 40,
       );
-      const s = sessions[0];
+      const s = hydrateKnownTranscript(sessions[0]);
       // Save the first active session before the queue, so both survive a refresh.
       write(STORAGE.active, s);
       setPending(sessions.slice(1));
@@ -1249,7 +1250,7 @@ export default function App() {
                             : "스크립트 가져오기"}
                         </button>
                         <Help label="스크립트 가져오기">
-                          {__STATIC_HOST__ ? "이웃 대화와 Small talk는 시간 자막을 바로 가져올 수 있어요. 다른 영상은 유튜브 스크립트를 시간 표시째 붙여넣거나 SRT·VTT 파일을 넣으세요." : "유튜브 영어 시간 자막을 먼저 시도합니다. 가져오지 못하면 연결된 ABC 원문을 불러옵니다. ABC 원문에는 시간 정보가 없습니다. 자동 수집이 안 되면 유튜브 스크립트를 시간 표시째 붙여넣거나 SRT·VTT 파일을 넣으세요."}
+                          {__STATIC_HOST__ ? "이웃 대화, Small talk, Getting a refund는 시간 자막을 자동으로 준비합니다. 다른 영상은 유튜브 스크립트를 시간 표시째 붙여넣거나 SRT·VTT 파일을 넣으세요." : "유튜브 영어 시간 자막을 먼저 시도합니다. 가져오지 못하면 연결된 ABC 원문을 불러옵니다. ABC 원문에는 시간 정보가 없습니다. 자동 수집이 안 되면 유튜브 스크립트를 시간 표시째 붙여넣거나 SRT·VTT 파일을 넣으세요."}
                         </Help>
                       </div>}
                       {!__STATIC_HOST__ && !session.transcript.trim() && (
