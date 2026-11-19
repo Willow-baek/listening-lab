@@ -41,7 +41,7 @@ import {
 import { YouTube, type Player } from "./youtube";
 import { Help } from "./Help";
 import { firstSpeechRange, transcriptCues as parseCaptionText, rangeForText } from "./transcript-cues";
-import { hydrateKnownTranscript, loadTranscript } from "./transcript-loader";
+import { hydrateKnownTranscript, loadTranscript, type LoadedTranscript } from "./transcript-loader";
 import { recordStageTime } from "./stage-time";
 import { SheetsConnection } from "./SheetsConnection";
 import { KNOWN_CAPTIONS } from "./known-captions";
@@ -114,21 +114,27 @@ export default function App() {
     [end, setEnd] = useState("40");
   const rangeEdited = useRef(false);
   const [timingBusy, setTimingBusy] = useState(false);
+  const [preparationError,setPreparationError] = useState('');
+  const [preparationAttempt,setPreparationAttempt] = useState(0);
+  const [preparedTranscript,setPreparedTranscript] = useState<(LoadedTranscript & {videoId:string}) | null>(null);
   useEffect(() => {
     const id = videoId(url);
+    setPreparationError('');
     if (!id || session) { setTimingBusy(false); return; }
     const apply = (range: {start: number; end: number} | null | undefined) => {
       if (range && !rangeEdited.current) { setStart(String(range.start)); setEnd(String(range.end)); }
     };
     if (KNOWN_CAPTIONS[id]) { apply(firstSpeechRange(KNOWN_CAPTIONS[id])); setTimingBusy(false); return; }
-    if (__STATIC_HOST__) { setTimingBusy(false); return; }
-    const controller = new AbortController();
+    let cancelled = false;
+    setPreparedTranscript(null);
     setTimingBusy(true);
-    fetch(`/__listening-lab/timing?videoId=${encodeURIComponent(id)}`, { signal: controller.signal })
-      .then(res => res.json()).then(data => { if (!controller.signal.aborted) apply(data.range); })
-      .catch(() => {}).finally(() => { if (!controller.signal.aborted) setTimingBusy(false); });
-    return () => controller.abort();
-  }, [url, session?.id]);
+    loadTranscript(id).then(data=>{
+      if (cancelled) return;
+      setPreparedTranscript({...data,videoId:id});
+      if (data.cues?.length) apply(firstSpeechRange(data.cues));
+    }).catch(error=>{if (!cancelled) setPreparationError((error as Error).message);}).finally(()=>{if (!cancelled) setTimingBusy(false);});
+    return () => {cancelled = true;};
+  }, [url, session?.id,preparationAttempt]);
   const [selection, setSelection] = useState(""),
     [manualStart, setManualStart] = useState(() => String(session?.start ?? 0)),
     [manualEnd, setManualEnd] = useState(() => String(session?.end ?? 10)),
@@ -202,6 +208,19 @@ export default function App() {
   }, []);
   const update = (patch: Partial<Session>) =>
     setSession((s) => (s ? { ...s, ...patch } : s));
+  // Fetch new and resumed sessions as well; captions remain hidden in STEP 1.
+  // A late response must never replace text the learner has already entered.
+  useEffect(()=>{
+    if (!session || session.phase !== 'training' || session.transcript.trim() || transcriptEditing) return;
+    let cancelled = false;
+    const id = session.id;
+    setImporting(true);setImportError('');
+    loadTranscript(session.videoId).then(data=>{
+      if (!cancelled) setSession(s=>s?.id === id && !s.transcript.trim() ? {...s,transcript:data.text,transcriptCues:data.cues ?? [],transcriptSource:data.source} : s);
+    }).catch(error=>{if (!cancelled) setImportError((error as Error).message);})
+      .finally(()=>{if (!cancelled) setImporting(false);});
+    return ()=>{cancelled = true;setImporting(false);};
+  },[session?.id,transcriptEditing]);
   const advance = () => {
     const original = current.current;
     const s = original ? recordStageTime(original, Date.now()) : null;
@@ -378,6 +397,11 @@ export default function App() {
         mode === "split" && b - a > 40,
       );
       const s = hydrateKnownTranscript(sessions[0]);
+      if (preparedTranscript?.videoId === s.videoId) {
+        s.transcript = preparedTranscript.text;
+        s.transcriptCues = preparedTranscript.cues;
+        s.transcriptSource = preparedTranscript.source;
+      }
       // Save the first active session before the queue, so both survive a refresh.
       write(STORAGE.active, s);
       setPending(sessions.slice(1));
@@ -1009,6 +1033,7 @@ export default function App() {
                     {error}
                   </p>
                 )}
+                {preparationError && <div className="error" role="alert">{preparationError} <button type="button" className="text-button" onClick={()=>setPreparationAttempt(n=>n+1)}>다시 시도</button></div>}
                 <button className="primary wide" type="submit" disabled={timingBusy}>
                   {timingBusy ? "시작 구간 확인 중…" : "START SESSION"}
                   <ArrowRight size={18} />
@@ -1244,7 +1269,7 @@ export default function App() {
                   </div>
                   {session.step === 1 && (!session.transcript.trim() || transcriptEditing) && (
                     <div className="transcript-editor">
-                      {!session.transcript.trim() && (!__STATIC_HOST__ || KNOWN_CAPTIONS[session.videoId]) && <div className="transcript-import">
+                      {!session.transcript.trim() && <div className="transcript-import">
                         <button
                           className="quiet"
                           disabled={
@@ -1257,7 +1282,7 @@ export default function App() {
                             : "스크립트 가져오기"}
                         </button>
                         <Help label="스크립트 가져오기">
-                          {__STATIC_HOST__ ? "이웃 대화, Small talk, Getting a refund는 시간 자막을 자동으로 준비합니다. 다른 영상은 유튜브 스크립트를 시간 표시째 붙여넣거나 SRT·VTT 파일을 넣으세요." : "유튜브 영어 시간 자막을 먼저 시도합니다. 가져오지 못하면 연결된 ABC 원문을 불러옵니다. ABC 원문에는 시간 정보가 없습니다. 자동 수집이 안 되면 유튜브 스크립트를 시간 표시째 붙여넣거나 SRT·VTT 파일을 넣으세요."}
+                          YouTube에 공개된 영어 자막과 시간을 자동으로 가져옵니다. STEP 1에서는 스크립트를 숨기고 STEP 2부터 보여 줍니다. 자막이 없거나 YouTube가 요청을 제한하면 다시 시도하거나 시간 자막을 직접 넣을 수 있어요.
                         </Help>
                       </div>}
                       {!__STATIC_HOST__ && !session.transcript.trim() && (

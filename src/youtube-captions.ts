@@ -31,9 +31,14 @@ export function json3Cues(data: unknown): TranscriptCue[] {
 export async function fetchYouTubeCaptions(videoId: string): Promise<TranscriptCue[]> {
   if (!/^[\w-]{11}$/.test(videoId)) throw new Error('올바른 유튜브 영상 링크를 입력하세요.');
   const signal = AbortSignal.timeout(10_000);
-  const response = await fetch(`https://www.youtube.com/watch?v=${videoId}`, { signal, redirect: 'error' });
-  if (!response.ok) throw new Error('유튜브 자막 연결 실패');
-  const tracks = extractTracks(await response.text()).filter(t => /^en(?:-|$)/.test(t.languageCode));
+  const playerResponse = await fetch('https://www.youtube.com/youtubei/v1/player', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, signal, redirect: 'error',
+    body: JSON.stringify({ context: { client: { clientName: 'ANDROID', clientVersion: '20.10.38' } }, videoId }),
+  });
+  if (!playerResponse.ok) throw new Error('YouTube 자막 연결 실패');
+  const player = await playerResponse.json();
+  if (player.playabilityStatus?.status !== 'OK') throw new Error('YouTube에서 자막을 제공하지 않거나 요청을 제한하고 있어요.');
+  const tracks: CaptionTrack[] = (player.captions?.playerCaptionsTracklistRenderer?.captionTracks ?? []).filter((t: CaptionTrack) => /^en(?:-|$)/.test(t.languageCode));
   tracks.sort((a, b) => Number(a.kind === 'asr') - Number(b.kind === 'asr'));
   for (const track of tracks.slice(0, 2)) {
     const url = new URL(track.baseUrl);

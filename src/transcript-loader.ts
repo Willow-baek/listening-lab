@@ -1,6 +1,7 @@
 import { KNOWN_CAPTIONS } from './known-captions';
 import type { TranscriptCue } from './transcript-cues';
 import type { Session } from './domain';
+import { remoteTranscript } from './transcript-bridge';
 export function hydrateKnownTranscript(session: Session, editing = false): Session {
   if (session.phase === 'result') return session;
   const cues = session.transcriptCues?.length ? session.transcriptCues : KNOWN_CAPTIONS[session.videoId];
@@ -15,12 +16,25 @@ export function hydrateKnownTranscript(session: Session, editing = false): Sessi
   };
 }
 export type LoadedTranscript = { text: string; cues?: TranscriptCue[]; source: string; kind?: string };
+const requests = new Map<string,Promise<LoadedTranscript>>();
 export async function loadTranscript(videoId: string, source?: string): Promise<LoadedTranscript> {
-  if (__STATIC_HOST__) {
+  if (!/^[\w-]{11}$/.test(videoId)) throw new Error('올바른 YouTube 영상 링크를 입력하세요.');
+  if (!source) {
     const cues = KNOWN_CAPTIONS[videoId];
-    if (cues && !source) return { text: cues.map(c => c.text).join('\n'), cues, source: `https://www.youtube.com/watch?v=${videoId}`, kind: 'youtube' };
-    throw new Error('이 영상은 시간 표시가 있는 유튜브 스크립트를 붙여넣거나 SRT·VTT 자막 파일을 넣어 주세요.');
+    if (cues) return {text:cues.map(c=>c.text).join('\n'),cues,source:`https://www.youtube.com/watch?v=${videoId}`,kind:'youtube'};
+    const saved = requests.get(videoId);
+    if (saved) return saved;
+    const request = (__STATIC_HOST__ ? remoteTranscript(videoId) : loadLocalTranscript(videoId)).catch(error=>{requests.delete(videoId);throw error;});
+    if (requests.size >= 100) requests.delete(requests.keys().next().value!);
+    requests.set(videoId,request);
+    return request;
   }
+  if (__STATIC_HOST__) {
+    return remoteTranscript(videoId);
+  }
+  return loadLocalTranscript(videoId,source);
+}
+async function loadLocalTranscript(videoId: string, source?: string): Promise<LoadedTranscript> {
   const params = new URLSearchParams({videoId});
   if (source) params.set('source', source);
   const response = await fetch(`/__listening-lab/transcript?${params}`);

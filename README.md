@@ -6,7 +6,11 @@ Live site: https://willow-baek.github.io/listening-lab/
 
 Pushes to `main` run the tests and publish via GitHub Actions. `npm run build:pages` builds for the `/listening-lab/` URL path.
 
-GitHub Pages is static hosting. The verified ABC neighbours, Small talk and Getting a refund videos include saved timed captions. Supported captions are prepared automatically at session start and remain hidden until STEP 2. Existing user text is preserved. For other videos, paste a transcript with timestamps or import an SRT/VTT file. Live caption fetching is available only with the development server or a separately hosted backend.
+GitHub Pages hosts the app. New links fetch public English timed captions through the Google Apps Script read endpoint in `src/transcript-bridge.ts`; the three original samples also have offline captions. Entering a link prepares captions and sets a forty-second window starting just before the first spoken cue, unless the learner edits the window. Text stays hidden in STEP 1 and appears in STEP 2. Late responses preserve user-entered text. Resumed sessions can fetch missing captions, and failed requests can be retried. No AI or generated timestamps are used.
+
+The app calls the read-only caption service in the sibling `listening-lab-caption-api` checkout. It sends only a public YouTube video ID, omits credentials and referrers, validates cue times and checks that the response belongs to the requested video. The service permits browser requests from the GitHub app and local preview origins, rejects other browser origins, caches successful public captions for up to six hours and never reads learning records or spreadsheets. No API keys are included in the app. Google Apps Script remains responsible only for the separate, authenticated Sheet sync.
+
+Public English captions must be available. YouTube may restrict automated requests; unavailable, restricted or empty captions show an error and offer retry or manual SRT/VTT/paste input. Caption collection uses the public player metadata and the Android player context used by `youtube-transcript-api`; this is not the YouTube Data API and may require maintenance when YouTube changes. Development uses the same retrieval method through Vite middleware.
 
 Session records stay in each browser and are separate from localhost and the earlier Sites URL. The total elapsed timer includes pauses; only the stage timer pauses.
 
