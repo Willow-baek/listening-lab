@@ -1787,3 +1787,8 @@ button.stage-number:focus-visible {
   .segment-heading-actions { gap: 4px; }
   .segment-heading-actions .quiet { padding-inline: 8px; font-size: 11px; }
 }
+
+.sheets-connection { margin-bottom: 28px; font-size: 13px; }
+.sheets-connection summary { cursor: pointer; color: var(--accent); }
+.sheets-connection form { max-width: 640px; margin-top: 16px; }
+.sheets-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 16px; }

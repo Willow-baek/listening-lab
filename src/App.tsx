@@ -42,6 +42,8 @@ import { YouTube, type Player } from "./youtube";
 import { Help } from "./Help";
 import { firstSpeechRange, transcriptCues as parseCaptionText, rangeForText } from "./transcript-cues";
 import { hydrateKnownTranscript, loadTranscript } from "./transcript-loader";
+import { recordStageTime } from "./stage-time";
+import { SheetsConnection } from "./SheetsConnection";
 import { KNOWN_CAPTIONS } from "./known-captions";
 import { SegmentPractice } from "./SegmentPractice";
 function loadActive(): Session | null {
@@ -201,7 +203,8 @@ export default function App() {
   const update = (patch: Partial<Session>) =>
     setSession((s) => (s ? { ...s, ...patch } : s));
   const advance = () => {
-    const s = current.current;
+    const original = current.current;
+    const s = original ? recordStageTime(original, Date.now()) : null;
     if (!s || s.phase !== "training" || !canAdvanceStage(s)) return;
     player.current?.pauseVideo();
     tracker.current.reset();
@@ -234,7 +237,8 @@ export default function App() {
     }
   };
   const previous = () => {
-    const s = current.current;
+    const original = current.current;
+    const s = original ? recordStageTime(original, Date.now()) : null;
     if (!s || s.phase !== "training" || s.step === 0) return;
     player.current?.pauseVideo();
     tracker.current.reset();
@@ -265,7 +269,7 @@ export default function App() {
       if (!stored || stored.phase !== "training") return;
       const timestamp = Date.now();
       const elapsedStartedAt = stored.elapsedStartedAt ?? timestamp - stored.elapsed * 1000;
-      const s = { ...stored, elapsedStartedAt, elapsed: wallElapsed(elapsedStartedAt, timestamp) };
+      const s = { ...recordStageTime(stored, timestamp), elapsedStartedAt, elapsed: wallElapsed(elapsedStartedAt, timestamp) };
       current.current = s;
       setSession(s);
       const repeat = s.step >= 2 && s.step <= 4;
@@ -581,6 +585,9 @@ export default function App() {
         </div>
       )}
       <main>
+        <div hidden={view !== "history" || Boolean(selected)}>
+          <SheetsConnection session={session} history={history} />
+        </div>
         {view === "history" && !selected ? (
           <>
             <div className="page-heading">

@@ -10,6 +10,14 @@ GitHub Pages is static hosting. The verified ABC neighbours, Small talk and Gett
 
 Session records stay in each browser and are separate from localhost and the earlier Sites URL. The total elapsed timer includes pauses; only the stage timer pauses.
 
+## Google Sheets sync
+
+Open the history screen to configure a personal Google Sheets connection. The destination workbook has two tabs, `학습 기록` and `단계별`. The app saves dates, links, exact clip boundaries, measured stage and total elapsed times, actual repeats, self-assessment and the next-level guide. Previous stage durations that were never measured stay blank.
+
+The receiver template is `integrations/google-sheets.gs`. Paste it into the Apps Script project bound to the destination Sheet, run `setup` once, review Google's requested spreadsheet permission, and deploy it as a web app. Its Script Properties contain the Sheet ID, allowed app origin and random connection key. Configure the deployment URL and key in the app; they stay in that browser and must not be committed to this repository. The receiver accepts writes only with that key and updates stable session IDs instead of duplicating rows. Acknowledged saves leave the local queue; unsuccessful requests remain queued for retry.
+
+Sync runs on connection, stage changes, final assessment completion and when coming back online. Use `지금 동기화` to refresh an in-progress session. Disconnecting stops future sync without deleting browser or Sheet records. Full transcripts and study notes are not sent.
+
 React + TypeScript로 만든 브라우저 로컬 리스닝 훈련 앱입니다. 기존 프로젝트가 없어 이 폴더에 독립적인 MVP로 구현했습니다.
 
 ## 실행

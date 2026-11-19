@@ -191,6 +191,8 @@ export type Session = {
   remaining: number;
   elapsed: number;
   elapsedStartedAt?: number;
+  stageElapsed?: (number | null)[];
+  stageClockAt?: number;
   remainingByStep?: number[];
   counts: number[];
   before: string;
@@ -260,6 +262,7 @@ export function canAdvanceStage(
 ): boolean {
   if (s.step === 1) return Boolean(s.transcript.trim());
   if (s.step >= 2 && s.step <= 4) return s.counts[s.step - 2] >= 10;
+  if (s.step === 5 || s.step === 6) return true;
   return true;
 }
 
@@ -308,6 +311,7 @@ export function createSessions(
       step: 0,
       remaining: plan[0],
       elapsed: 0,
+      stageElapsed: Array(7).fill(0),
       counts: [0, 0, 0],
       before: "",
       after: "",
