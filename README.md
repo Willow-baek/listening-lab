@@ -6,7 +6,7 @@ Live site: https://willow-baek.github.io/listening-lab/
 
 Pushes to `main` run the tests and publish via GitHub Actions. `npm run build:pages` builds for the `/listening-lab/` URL path.
 
-GitHub Pages hosts the app. New links fetch public English timed captions through the Google Apps Script read endpoint in `src/transcript-bridge.ts`; the three original samples also have offline captions. Entering a link prepares captions and sets a forty-second window starting just before the first spoken cue, unless the learner edits the window. Text stays hidden in STEP 1 and appears in STEP 2. Late responses preserve user-entered text. Resumed sessions can fetch missing captions, and failed requests can be retried. No AI or generated timestamps are used.
+GitHub Pages hosts the app. New links fetch public English timed captions through the read-only caption service in `src/transcript-bridge.ts`; the three original samples also have offline captions. Entering a link prepares captions and sets a forty-second window starting just before the first spoken cue, unless the learner edits the window. Text stays hidden in STEP 1 and appears in STEP 2. Late responses preserve user-entered text. Resumed sessions can fetch missing captions, and failed requests can be retried. No AI or generated timestamps are used.
 
 The app calls the read-only caption service in the sibling `listening-lab-caption-api` checkout. It sends only a public YouTube video ID, omits credentials and referrers, validates cue times and checks that the response belongs to the requested video. The service permits browser requests from the GitHub app and local preview origins, rejects other browser origins, caches successful public captions for up to six hours and never reads learning records or spreadsheets. No API keys are included in the app. Google Apps Script remains responsible only for the separate, authenticated Sheet sync.
 
@@ -105,8 +105,8 @@ http://127.0.0.1:5176/ 에서 사용합니다. `npm run build`는 TypeScript 검
 - 상단의 재생/일시정지 버튼은 페이지 맨 아래의 공식 YouTube 플레이어를 제어합니다. 영상은 CSS로 숨기거나 가리지 않습니다. 반복 화면은 횟수와 남은 시간을 크게 표시합니다.
 - STEP 3~5는 각 10회에서 정지하고 사용자가 ‘다음 단계로’를 눌러 이동합니다. STEP 6도 시간이 끝나면 정지하며 수동으로 넘어갑니다.
 - 반복 사이 휴식은 기본 3초이고 없음/2초/3초/5초로 변경할 수 있습니다. 휴식 중에는 영상·훈련 시간이 멈추고, 일시정지 시 휴식 카운트다운도 멈춥니다. 휴식은 예상 훈련 시간에 별도로 추가됩니다. 마지막 10회 후에는 자동 재생하지 않습니다.
-- 지원 자료인 이웃 대화·Small talk·Getting a refund는 실제 유튜브 시간 자막을 포함하며 세션 시작 시 준비합니다. STEP 1에서는 숨기고 STEP 2부터 보여줍니다. 별도 서버가 있는 환경에서는 다른 영상의 시간 자막 조회와 ABC 원문 대체를 시도합니다. GitHub Pages에서는 다른 자료의 자막을 직접 넣어야 합니다.
-- 시간 자막은 텍스트와 별도로 로컬 저장되며 STEP 6에서 문장 재생과 드래그 구간 시간 연결에 쓰입니다. 자동 조회는 비공식 공개 자막 경로라 성공을 보장하지 않습니다. 실패해도 시간 표시가 있는 유튜브 스크립트 붙여넣기 또는 SRT·VTT 파일 입력으로 진행할 수 있습니다. ABC 원문에는 시간이 없으며 추정하지 않습니다. 입력한 스크립트는 자동 가져오기로 덮어쓰지 않습니다. Vite dev/preview 서버가 필요합니다.
+- 지원 자료인 이웃 대화·Small talk·Getting a refund는 실제 유튜브 시간 자막을 포함하며 세션 시작 시 준비합니다. STEP 1에서는 숨기고 STEP 2부터 보여줍니다. 별도 서버가 있는 환경에서는 다른 영상의 시간 자막 조회와 ABC 원문 대체를 시도합니다. GitHub Pages도 별도 자막 서버에 연결하여 새로운 영상의 공개 영어 시간 자막을 자동으로 가져옵니다.
+- 시간 자막은 텍스트와 별도로 로컬 저장되며 STEP 6에서 문장 재생과 드래그 구간 시간 연결에 쓰입니다. 자동 조회는 비공식 공개 자막 경로라 성공을 보장하지 않습니다. 실패해도 시간 표시가 있는 유튜브 스크립트 붙여넣기 또는 SRT·VTT 파일 입력으로 진행할 수 있습니다. ABC 원문에는 시간이 없으며 추정하지 않습니다. 입력한 스크립트는 자동 가져오기로 덮어쓰지 않습니다. 배포본은 별도 자막 서버를 사용하며 Vite를 실행할 필요가 없습니다.
 - 첫 번째 자기평가는 25% 미만/25~49%/50~74%/75~89%/90~100%의 5개 선택지입니다. 비율은 자기평가 기준이며 자동 점수가 아닙니다. 기존 기록의 4점 척도 의미는 유지합니다.
 - Before & After 칸과 기록 내려받기 버튼은 제거했습니다. STEP 1 최초 듣기 메모와 로컬 학습 기록은 유지합니다.
 
