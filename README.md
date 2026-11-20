@@ -123,3 +123,7 @@ STEP 7도 STEP 6과 같은 시간 자막 컴포넌트를 사용합니다. 학습
 
 
 배포는 Sites Worker에서 React 정적 파일과 자막·시작 구간 API를 함께 제공합니다. `npm run build:hosted`로 `dist/server/index.js`를 만들며 API가 로컬 Vite에 의존하지 않습니다. 새 URL은 별도 브라우저 저장 공간을 사용하므로 localhost 기록은 로컬에 그대로 남습니다. 배포 기본 접근 범위는 소유자 전용입니다.
+
+### Temporary YouTube caption restrictions
+
+The public caption service can receive temporary bot-check responses from YouTube. The app retries transient network/429/5xx failures at most three times within a 30-second request window. Successful validated captions are retained in the browser CacheStorage for up to 30 days (20 videos). Restricted storage falls back to live requests. The service coalesces concurrent requests and uses the existing edge Cache API: fresh for seven days, retained for up to 30 days for temporary-failure recovery. Edge caches are per data center and may be evicted; first-time uncached videos can still be restricted by YouTube. Permanent unavailable/no-English responses are not retried. No paid proxy or additional storage service was added; the existing billing pause still blocks network requests at its cutoff.
