@@ -40,7 +40,7 @@ import {
 } from "./domain";
 import { YouTube, type Player } from "./youtube";
 import { Help } from "./Help";
-import { firstSpeechRange, transcriptCues as parseCaptionText, rangeForText } from "./transcript-cues";
+import { firstSpeechRange, transcriptExcerpt, transcriptCues as parseCaptionText, rangeForText } from "./transcript-cues";
 import { hydrateKnownTranscript, loadTranscript, type LoadedTranscript } from "./transcript-loader";
 import { recordStageTime } from "./stage-time";
 import { SheetsConnection } from "./SheetsConnection";
@@ -529,6 +529,10 @@ export default function App() {
     setLoop(false);
     tracker.current.reset();
   }
+  const excerpt = session?.transcriptCues?.length
+    ? transcriptExcerpt(session.transcriptCues, session)
+    : null;
+  const displayedTranscript = excerpt ? excerpt.text : session?.transcript ?? '';
   const shown = selected ?? session;
   const result = shown?.phase === "result" ? shown : null;
   const training = session?.phase === "training" && view === "main";
@@ -1353,7 +1357,7 @@ export default function App() {
                         )
                       }
                     >
-                      {session.transcript}
+                      {displayedTranscript || "선택한 학습 구간에 자막이 없어요. 아래에서 구간을 확인해 주세요."}
                     </div>
                   )}
                 </section>

@@ -38,3 +38,45 @@ test('default training starts with dialogue after the opening and retains forty 
   assert.deepEqual(firstSpeechRange([{start:8,end:30,text:'Short clip'}]), {start:8,end:30});
   assert.equal(firstSpeechRange([]), undefined);
 });
+
+test('training excerpt excludes opening, other sections and overlapping ASR tails without changing original captions', async () => {
+  const {transcriptExcerpt} = await import('./transcript-cues');
+  const source = [
+    {start:0,end:10,text:'Opening.'},
+    {start:69,end:78,text:'Previous ASR line.'},
+    {start:72,end:79,text:'For me the most important thing'},
+    {start:76,end:82,text:'is a thoughtful answer.'},
+    {start:82,end:86,text:'A completely different section.'},
+  ];
+  const before=JSON.stringify(source);
+  const excerpt=transcriptExcerpt(source,{start:74,end:80});
+  assert.equal(excerpt.text,'For me the most important thing\nis a thoughtful answer.');
+  assert.deepEqual(excerpt.cues.map(c=>[c.start,c.end]),[[74,76],[76,80]]);
+  assert.equal(JSON.stringify(source),before);
+  assert.equal(transcriptExcerpt(source,{start:82,end:86}).text,'A completely different section.');
+  assert.equal(transcriptExcerpt(source,{start:100,end:110}).text,'');
+});
+
+test('excerpt completes at most the first sentence after the boundary and never expands playback ranges', async () => {
+  const {transcriptExcerpt} = await import('./transcript-cues');
+  const excerpt=transcriptExcerpt([
+    {start:8,end:12,text:'We need to finish'},
+    {start:12,end:15,text:'the project'},
+    {start:15,end:18,text:'by Friday. Another topic starts here.'},
+    {start:18,end:22,text:'Do not include this.'},
+  ],{start:8,end:11});
+  assert.equal(excerpt.text,'We need to finish\nthe project\nby Friday.');
+  assert.deepEqual(excerpt.cues,[{start:8,end:11,text:'We need to finish'}]);
+  assert.equal(excerpt.continuation,'the project\nby Friday.');
+});
+
+test('unpunctuated caption continuation is bounded, and gaps, music and completed sentences stop it', async () => {
+  const {transcriptExcerpt} = await import('./transcript-cues');
+  const rows=Array.from({length:20},(_,i)=>({start:i*2,end:i*2+2,text:'words '+i}));
+  const excerpt=transcriptExcerpt(rows,{start:0,end:3});
+  assert.equal(excerpt.continuation,'words 2\nwords 3\nwords 4');
+  for(const tail of [{start:10,end:12,text:'New section'}, {start:4,end:6,text:'[Music]'}]) {
+    assert.equal(transcriptExcerpt([{start:0,end:4,text:'Unfinished'},tail],{start:0,end:3}).continuation,'');
+  }
+  assert.equal(transcriptExcerpt([{start:0,end:4,text:'Finished.'},{start:4,end:6,text:'Unrelated.'}],{start:0,end:3}).continuation,'');
+});

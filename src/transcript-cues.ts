@@ -65,3 +65,39 @@ export function firstSpeechRange(cues: TranscriptCue[], duration = 40): ClipRang
   const end = Math.min(start + duration, Math.floor(Math.max(...spoken.map(c => c.end))));
   return end - start >= 2 ? { start, end } : undefined;
 }
+
+/** A display-only excerpt. Keep the original captions intact for range changes.
+ * Overlapping ASR durations end at the next cue's start for clip membership.
+ * With no sentence punctuation, continuation is limited to three cues/eight seconds.
+ * Continuation is reading context only; playable cue ranges stay inside the clip.
+ */
+export function transcriptExcerpt(source: TranscriptCue[], clip: ClipRange) {
+  const rows = source.filter(c => c.text.trim() && Number.isFinite(c.start) && Number.isFinite(c.end) && c.start >= 0 && c.end > c.start)
+    .slice().sort((a, b) => a.start - b.start);
+  const selected: TranscriptCue[] = [];
+  let last = -1;
+  for (let i = 0; i < rows.length; i++) {
+    const cue = rows[i];
+    const until = Math.min(cue.end, rows[i + 1]?.start ?? cue.end);
+    if (cue.start < clip.end && until > clip.start) {
+      selected.push({...cue, start:Math.max(clip.start, cue.start), end:Math.min(clip.end, until)});
+      last = i;
+    }
+  }
+  let continuation = '';
+  const terminal = /[.!?]["'’”\])]*\s*$/u;
+  if (last >= 0 && !terminal.test(rows[last].text)) {
+    let previous = rows[last];
+    const parts: string[] = [];
+    for (const cue of rows.slice(last + 1, last + 4)) {
+      if (cue.start >= clip.end + 8 || cue.start - previous.end > 2 || /^\s*(?:\[[^\]]+\]|[♪♫].*)\s*$/u.test(cue.text)) break;
+      // Stop at the first sentence ending; never include the next full sentence.
+      const ending = cue.text.match(/[.!?]["'’”\])]*(?=\s|$)/u);
+      parts.push(ending ? cue.text.slice(0, ending.index! + ending[0].length) : cue.text);
+      if (ending) break;
+      previous = cue;
+    }
+    continuation = parts.join('\n');
+  }
+  return {cues:selected, continuation, text:[...selected.map(c => c.text), continuation].filter(Boolean).join('\n')};
+}

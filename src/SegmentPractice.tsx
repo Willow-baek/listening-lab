@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Play, Plus, Trash2 } from 'lucide-react';
 import { Help } from './Help';
 import { formatTime, type Mark } from './domain';
-import { transcriptCues, validClipRange, rangeForText, type TranscriptCue, type ClipRange } from './transcript-cues';
+import { transcriptCues, transcriptExcerpt, validClipRange, rangeForText, type TranscriptCue, type ClipRange } from './transcript-cues';
 
 type Props = {
   transcript: string; start: number; end: number; marks: Mark[];
@@ -18,9 +18,8 @@ type Props = {
   onRateChange?: (rate: number) => void;
 };
 export function SegmentPractice({ transcript, start, end, marks, onChange, onPlay, onStop, looping, onExtend, sourceCues, playbackRate = 1, availableRates = [1], rateReady = false, onRateChange }: Props) {
-  const cues = useMemo(() => sourceCues?.length
-    ? sourceCues.map(c => ({ ...c, start: Math.max(start, c.start), end: Math.min(end, c.end) })).filter(c => validClipRange(c, { start, end }))
-    : transcriptCues(transcript, { start, end }), [transcript, start, end, sourceCues]);
+  const excerpt = useMemo(() => transcriptExcerpt(sourceCues?.length ? sourceCues : transcriptCues(transcript, { start:0, end }), {start, end}), [transcript, start, end, sourceCues]);
+  const cues = excerpt.cues;
   const [text, setText] = useState('');
   const [rangeStart, setRangeStart] = useState(String(start));
   const [rangeEnd, setRangeEnd] = useState(String(end));
@@ -95,7 +94,8 @@ export function SegmentPractice({ transcript, start, end, marks, onChange, onPla
             onChange([...marks, { id: crypto.randomUUID(), text: cue.text, note: '', done: false, rangeOrigin: "caption", range: { start: cue.start, end: cue.end } }]);
         }}><Plus size={16} /></button>
       </div>)}
-    </div> : <div className="transcript" ref={script} onMouseUp={capture} onTouchEnd={capture}>{transcript || 'STEP 2에서 스크립트를 입력하세요.'}</div>}
+      {excerpt.continuation && <p className="cue-context"><span className="muted">문장 이어보기 · </span>{excerpt.continuation}</p>}
+    </div> : <div className="transcript" ref={script} onMouseUp={capture} onTouchEnd={capture}>{sourceCues?.length ? '선택한 학습 구간에 자막이 없어요.' : transcript || 'STEP 2에서 스크립트를 입력하세요.'}</div>}
     {error && <p className="error" role="alert">{error}</p>}
     <div className="saved-segments">
       {marks.map(mark => <article key={mark.id} className={`saved-segment ${mark.done ? 'done' : ''}`}>
